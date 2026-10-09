@@ -1,5 +1,4 @@
 import { Client } from "pg"
-import { argv } from 'node:process';
 
 const SQL = `
   CREATE TABLE IF NOT EXISTS users (
