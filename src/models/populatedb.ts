@@ -2,15 +2,23 @@ import { Client } from "pg"
 
 const SQL = `
   CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      first_name TEXT,
-      last_name TEXT,
-      email TEXT,
-      hashed_pwd TEXT,
-      membershipStat BOOLEAN,
-      is_admin BOOLEAN,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    first_name TEXT,
+    last_name TEXT,
+    email TEXT,
+    hashed_pwd TEXT,
+    membershipStat BOOLEAN,
+    is_admin BOOLEAN,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id UUID,
+    title TEXT,
+    content TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
   CREATE TABLE "session" (
@@ -21,14 +29,6 @@ const SQL = `
   WITH (OIDS=FALSE);
   ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
   CREATE INDEX "IDX_session_expire" ON "session" ("expire");
-
-  CREATE TABLE IF NOT EXISTS messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    owner_id UUID,
-    title TEXT,
-    content TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
 
   CREATE OR REPLACE FUNCTION set_updated_at()
   RETURNS TRIGGER AS $$
