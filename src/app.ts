@@ -1,4 +1,5 @@
 import express from "express";
+import passport from "passport";
 import session from "express-session";
 import pgSession from 'connect-pg-simple'
 import { pool as db, testConnection } from './models/database.ts'
@@ -19,6 +20,10 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }))
+
+import "./auth/passport.ts"
+app.use(passport.initialize())
+app.use(passport.session())
 
 const PORT = 3000;
 app.listen(PORT, (error) => {
