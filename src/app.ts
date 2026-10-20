@@ -1,14 +1,20 @@
-import express from "express";
+import "./auth/passport.ts"
+import path from "node:path";
+import express, { type Request, type Response, type NextFunction } from "express";
 import passport from "passport";
+import flash from "connect-flash";
 import session from "express-session";
 import pgSession from 'connect-pg-simple'
+import authRouter from "./routers/authRouter.ts";
 import { pool as db, testConnection } from './models/database.ts'
 
 const app = express();
-app.use(express.urlencoded({ extended: true }));
+
+const __dirname = import.meta.dirname;
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 
 const PostgresStore = pgSession(session)
-
 testConnection()
 
 app.use(session({
@@ -20,14 +26,24 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }))
-
-import "./auth/passport.ts"
-app.use(passport.initialize())
 app.use(passport.session())
+app.use(express.urlencoded({ extended: false }));
+
+app.use(flash()); 
+
+app.use(authRouter)
+
+app.get("/", (req, res) => {
+  if (!req.user) {
+    res.redirect("/login");
+    return 
+  }
+  res.render("index", { user: req.user });
+});
 
 const PORT = 3000;
 app.listen(PORT, (error) => {
     if (error) throw error;
 
-    console.log(`Express Node Template - listening on port ${PORT}!`);
+    console.log(`Members Only Application - listening on port ${PORT}!`);
 })

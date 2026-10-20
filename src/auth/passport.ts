@@ -38,8 +38,6 @@ const verifyCallback = async (
   }
 };
 
-passport.use(new LocalStrategy(customFields, verifyCallback));
-
 passport.serializeUser((user: User | any, done) => {
   done(null, user.id);
 });
@@ -51,9 +49,24 @@ passport.deserializeUser(async (id, done) => {
       values: [id],
     });
     const user = rows[0];
+    const {
+      first_name: firstName,
+      last_name: lastName,
+      memb_stat: membStat,
+      is_admin: isAdmin,
+      ...restInfo
+    } = user;
 
-    done(null, user);
+    done(null, {
+      firstName,
+      lastName,
+      membStat,
+      isAdmin,
+      ...restInfo,
+    });
   } catch (err) {
     done(err);
   }
 });
+
+passport.use(new LocalStrategy(customFields, verifyCallback));
