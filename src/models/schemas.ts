@@ -4,7 +4,7 @@ export interface User {
   last_name?: string | null
   email?: string | null
   hashed_pwd?: string | null
-  membershipStat?: boolean | null
+  is_active?: boolean | null
   is_admin?: boolean | null
   created_at: Date
   updated_at: Date

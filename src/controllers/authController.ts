@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import passport from "passport";
-import { pool as db } from "../models/database.ts";
+import { User } from "../models/schemas.ts";
+import usrQueries from "../models/usrQueries.ts";
 import { body, validationResult } from "express-validator";
 import { type Request, type Response, type NextFunction } from "express";
 
@@ -48,11 +49,17 @@ function authLoginGet(req: Request, res: Response, next: NextFunction) {
 
 const authLoginPost = [
   passport.authenticate("local", {
-    successRedirect: "/",
     failureRedirect: "/login",
     failureFlash: true,
     failureMessage: true,
   }),
+  (req: Request, res: Response) => {
+    const user = req.user as User
+    if (user.is_active)
+      res.redirect("/")
+    else
+      res.redirect(`/activate/${user.id}`)
+  }
 ];
 
 function authSignUpGet(req: Request, res: Response, next: NextFunction) {
@@ -64,26 +71,25 @@ const authRegisterPost = [
   ...validateSignUp,
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       const errorMessages = errors.array().map(err => err.msg);
+
       req.flash('validation_errors', errorMessages);
       return res.redirect("/sign-up")
     }
     next()
   },
+  
   async function (req: Request, res: Response, next: NextFunction) {
     try {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      const execQuery = {
-        text: `INSERT INTO users (first_name, last_name, email, hashed_pwd, memb_stat, is_admin) VALUES ($1, $2, $3, $4, 'active', FALSE)`,
-        values: [
-          req.body.firstName,
-          req.body.lastName,
-          req.body.email,
-          hashedPassword,
-        ],
-      };
-      await db.query(execQuery);
+      await usrQueries.createUser({
+        first_name: req.body.firstName,
+        last_name: req.body.lastName,
+        email: req.body.email,
+        hashed_pwd: hashedPassword,
+      });
       res.redirect("/");
     } catch (err) {
       return next(err);

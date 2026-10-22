@@ -1,15 +1,13 @@
 import { Client } from "pg"
 
-const SQL = `
-  CREATE TYPE status AS ENUM ('active', 'disabled');
-  
+const SQL = `  
   CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name TEXT,
     last_name TEXT,
     email TEXT,
     hashed_pwd TEXT,
-    memb_stat status,
+    is_active BOOLEAN,
     is_admin BOOLEAN,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
