@@ -1,5 +1,6 @@
 import msgStorage from "../models/msgQueries.ts";
 import usrStorage from "../models/usrQueries.ts";
+import validator from 'validator';
 import { body, matchedData, param, validationResult } from "express-validator";
 import { type Request, type Response, type NextFunction } from "express";
 import { User } from "../models/schemas.ts";
@@ -33,11 +34,12 @@ const getAllUserMsgs = async (req: Request, res: Response) => {
   const msgsRes: MsgsResponse[] = [];
 
   messages.forEach((msg, idx) => {
-    const { owner_id: senderId, created_at, ...restAttr } = msg;
+    const { owner_id: senderId, created_at, content, ...restAttr } = msg;
 
     msgsRes.push({
       senderName: `${senders[idx]?.first_name} ${senders[idx]?.last_name}`,
       senderId,
+      content: validator.unescape(content),
       createdAt: format(created_at, "yyyy-MM-dd HH:mm:ss"),
       ...restAttr,
     });
