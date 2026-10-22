@@ -5,12 +5,21 @@
   <title>Log In</title>
 </head>
 <body>
-  <% if (locals.user) {%>
+  <% if (locals.user) { %>
     <h1>Welcome Back, <%= user.firstName %> <%= user.lastName %>!</h1>
-
+    <form action="/messages" method="post">
+      <label for="title">Title:</label>
+      <input type="text" name="title" id="title">
+      <label for="content">Message:</label>
+      <textarea name="content" id="content"></textarea>
+      <button type="submit">Send</button>
+    </form>
     <h2>All Messages:</h2>
-    <a href="/createMessage">Add a new</a>
+    <%- include('partials/messages', {messages: locals.msgs}) %>
     <a href="/log-out">LOG OUT</a>
+  <% } else { %>
+    <h1>Error: You were not authenticated</h1>
+    <a href="/login">Back to Login</a>
   <% } %>
 
 </body>

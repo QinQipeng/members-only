@@ -1,12 +1,8 @@
+import { DatabaseError } from "pg";
 import { pool as db } from "./database.ts";
 import { type User } from "./schemas.ts";
 
-type NewUser = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  hashed_pwd: string;
-};
+type NewUser = Pick<User, 'first_name' | 'last_name' | 'email' | 'hashed_pwd' >
 
 async function getUserById(id: string): Promise<User | undefined> {
   const { rows } = await db.query<User>({
@@ -32,7 +28,7 @@ async function createUser(user: NewUser): Promise<void> {
         VALUES ($1, $2, $3, $4, FALSE, FALSE)`,
       values: [user.first_name, user.last_name, user.email, user.hashed_pwd],
     });
-  } catch (err: Error | unknown) {
+  } catch (err: DatabaseError | Error | unknown) {
     throw new Error(String(err))
   }
 }
@@ -43,7 +39,7 @@ async function activateUser(id: string) {
       text: `UPDATE users SET is_active = true WHERE id = $1`,
       values: [id],
     });
-  } catch (err: Error | unknown) {
+  } catch (err: DatabaseError | Error | unknown) {
     throw new Error(String(err))
   }
 }

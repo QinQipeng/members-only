@@ -9,6 +9,8 @@ import { randomBytes } from "node:crypto";
 
 import authRouter from "./routers/authRouter.ts";
 import userRouter from "./routers/usrRouter.ts";
+import msgRouter from "./routers/msgRouter.ts";
+
 import { pool as db, testConnection } from './models/database.ts'
 
 const app = express();
@@ -35,16 +37,9 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(flash()); 
 
-app.use(authRouter)
-app.use(userRouter)
-
-app.get("/", (req, res) => {
-  if (!req.user) {
-    res.redirect("/login");
-    return 
-  }
-  res.render("index", { user: req.user });
-});
+app.use(authRouter);
+app.use(userRouter);
+app.use(msgRouter);
 
 const PORT = 3000;
 app.listen(PORT, (error) => {
