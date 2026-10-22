@@ -4,6 +4,15 @@ import { DatabaseError } from "pg";
 
 type NewMessage = Omit<Message, "created_at" | "id">;
 
+async function getMessageById(id: string): Promise<Message | undefined> {
+  const { rows } = await db.query<Message>({
+    text: "SELECT * FROM messages WHERE id = $1",
+    values: [id],
+  });
+
+  return rows.length == 0 ? undefined: rows[0];
+}
+
 async function getAllMessages(): Promise<Message[]> {
   const { rows } = await db.query<Message>({
     text: "SELECT * FROM messages",
@@ -27,7 +36,7 @@ async function createNewMessage(newMsg: NewMessage): Promise<void> {
 async function deleteMessage(msgId: string): Promise<void> {
   try {
     await db.query<Message>({
-      text: `DELETE FROM table_name WHERE id = $1;`,
+      text: `DELETE FROM messages WHERE id = $1;`,
       values: [msgId],
     });
   } catch (err: DatabaseError | Error | unknown) {
@@ -36,6 +45,7 @@ async function deleteMessage(msgId: string): Promise<void> {
 }
 
 export default {
+  getMessageById,
   getAllMessages,
   createNewMessage,
   deleteMessage,

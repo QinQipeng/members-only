@@ -40,7 +40,8 @@ const validateSignUp = [
     .custom((value, { req }) => {
       if (req.body?.password != value) throw new Error("Password confirmation does not match password");
       return true      
-    })
+    }),
+  body("isAdmin").optional({values: "falsy"})
 ]
 
 function authLoginGet(req: Request, res: Response, next: NextFunction) {
@@ -80,7 +81,6 @@ const authRegisterPost = [
     }
     next()
   },
-  
   async function (req: Request, res: Response, next: NextFunction) {
     try {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -89,6 +89,7 @@ const authRegisterPost = [
         last_name: req.body.lastName,
         email: req.body.email,
         hashed_pwd: hashedPassword,
+        is_admin: req.body?.isAdmin ? true : false
       });
       res.redirect("/");
     } catch (err) {

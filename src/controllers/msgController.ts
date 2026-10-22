@@ -1,6 +1,6 @@
 import msgStorage from "../models/msgQueries.ts";
 import usrStorage from "../models/usrQueries.ts";
-import { body, matchedData, validationResult } from "express-validator";
+import { body, matchedData, param, validationResult } from "express-validator";
 import { type Request, type Response, type NextFunction } from "express";
 import { User } from "../models/schemas.ts";
 import { format } from "date-fns";
@@ -49,7 +49,10 @@ const getAllUserMsgs = async (req: Request, res: Response) => {
 const sendUserMsg = [
   ...sanitizeMsg,
   (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {res.redirect("/"); return;}
+    if (!req.user) {
+      res.redirect("/");
+      return;
+    }
     next();
   },
   async (req: Request, res: Response) => {
@@ -66,7 +69,29 @@ const sendUserMsg = [
   },
 ];
 
+const deleteUsrMsg = [
+  param("id")
+    .isUUID()
+    .custom(async (id) => {
+      const msg = await msgStorage.getMessageById(id);
+      if (!msg) throw new Error("Message to delete does not exist");
+      return true;
+    }),
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    console.log(errors)
+
+    const user = req.user as User;
+    const { id } = matchedData(req);
+    if (!(user && user.is_admin && errors.isEmpty())) {
+      await msgStorage.deleteMessage(id);
+    }
+    res.redirect("/");
+  },
+];
+
 export default {
   sendUserMsg,
   getAllUserMsgs,
+  deleteUsrMsg,
 };
